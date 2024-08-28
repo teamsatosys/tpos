@@ -129,3 +129,12 @@ async def m009_tax_inclusive(db):
         "ALTER TABLE tpos.pos ADD COLUMN tax_inclusive BOOL NOT NULL DEFAULT true;"
     )
     await db.execute("ALTER TABLE tpos.pos ADD COLUMN tax_default FLOAT DEFAULT 0;")
+
+async def m010_webhook(db):
+    """
+    Add webhook columns
+    """
+    await db.execute(
+        "ALTER TABLE tpos.pos ADD COLUMN webhook_url TEXT  NULL DEFAULT '',ADD COLUMN webhook_headers TEXT NOT NULL DEFAULT '',ADD COLUMN webhook_body TEXT  NULL DEFAULT '' ;"
+    )
+
