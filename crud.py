@@ -26,9 +26,10 @@ async def create_tpos(wallet_id: str, data: CreateTposData) -> TPoS:
         (
             id, wallet, name, currency, tip_options, tip_wallet, withdrawlimit,
             withdrawpin, withdrawamt, withdrawtime, withdrawbtwn, withdrawtimeopt,
-            withdrawpindisabled, withdrawpremium
+            withdrawpindisabled, withdrawpremium,webhook_url,webhook_headers,webhook_body
+
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             tpos_id,
@@ -45,6 +46,10 @@ async def create_tpos(wallet_id: str, data: CreateTposData) -> TPoS:
             data.withdrawtimeopt,
             data.withdrawpindisabled,
             data.withdrawpremium,
+            data.webhook_url,
+            data.webhook_headers,
+            data.webhook_body,
+
         ),
     )
     tpos = await get_tpos(tpos_id)

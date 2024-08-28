@@ -21,8 +21,12 @@ class CreateTposData(BaseModel):
     withdrawbtwn: int = Field(10, ge=1)
     withdrawpremium: float = Field(None)
     withdrawpindisabled: bool = Field(False)
+    webhook_url: str = Field(None)
+    webhook_headers: str = Field(None)
+    webhook_body: str = Field(None)
     tax_inclusive: bool = Field(True)
     tax_default: float = Field(None)
+
 
 
 class TPoSClean(BaseModel):
@@ -37,6 +41,9 @@ class TPoSClean(BaseModel):
     withdrawbtwn: int
     withdrawpremium: Optional[float]
     withdrawpindisabled: Optional[bool]
+    webhook_url: Optional[str]
+    webhook_headers:Optional[str]
+    webhook_body: Optional[str]
     items: Optional[str]
     tax_inclusive: bool
     tax_default: Optional[float]

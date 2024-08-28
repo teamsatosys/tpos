@@ -347,6 +347,30 @@
           :options="currencyOptions"
           label="Currency *"
         ></q-select>
+        <q-input
+          filled
+          dense
+          v-model="formDialog.data.webhook_url"
+          type="text"
+          label="Webhook URL (optional)"
+          hint="A URL to be called whenever this link receives a payment."
+        ></q-input>
+        <q-input
+          filled
+          dense
+          v-model="formDialog.data.webhook_headers"
+          type="text"
+          label="Webhook headers (optional)"
+          hint="Custom data as JSON string, send headers along with the webhook."
+        ></q-input>
+        <q-input
+          filled
+          dense
+          v-model="formDialog.data.webhook_body"
+          type="text"
+          label="Webhook custom data (optional)"
+          hint="Custom data as JSON string, will get posted along with webhook 'body' field."
+        ></q-input>
         <div class="row">
           <div class="col">
             <q-checkbox
