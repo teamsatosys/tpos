@@ -135,6 +135,6 @@ async def m010_webhook(db):
     Add webhook columns
     """
     await db.execute(
-        "ALTER TABLE tpos.pos ADD COLUMN webhook_url TEXT  NULL DEFAULT '',ADD COLUMN webhook_headers TEXT NOT NULL DEFAULT '',ADD COLUMN webhook_body TEXT  NULL DEFAULT '' ;"
+        "ALTER TABLE tpos.pos ADD COLUMN webhook_url TEXT  NULL DEFAULT '',ADD COLUMN webhook_headers TEXT  NULL DEFAULT '',ADD COLUMN webhook_body TEXT  NULL DEFAULT '' ;"
     )
 

@@ -1,6 +1,8 @@
+import json
 from http import HTTPStatus
 from typing import Callable, Optional
 
+import httpx
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
@@ -8,8 +10,9 @@ from lnbits.core.services import pay_invoice, websocket_updater
 from loguru import logger
 from starlette.exceptions import HTTPException
 
-from .crud import get_lnurlcharge, get_tpos, update_lnurlcharge, update_tpos_withdraw
-from .models import LNURLCharge
+from .crud import (get_lnurlcharge, get_tpos, update_lnurlcharge,
+                   update_tpos_withdraw)
+from .models import LNURLCharge, TPoS
 
 
 class LNURLErrorResponseHandler(APIRoute):
@@ -139,8 +142,32 @@ async def lnurl_callback(
             extra={"tag": "TPoSWithdraw", "tpos_id": lnurlcharge.tpos_id},
         )
         await websocket_updater(k1, "paid")
+        await dispatch_webhook(pr,tpos)
     except Exception as exc:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail=f"withdraw not working. {exc!s}"
         ) from exc
     return {"status": "OK"}
+async def dispatch_webhook(
+  payment_request: str,tpos:TPoS
+) -> None:
+    async with httpx.AsyncClient() as client:
+        try:
+            r: httpx.Response = await client.post(
+                tpos.webhook_url,
+                json={
+                    "payment_request": payment_request,
+                    "tpos": tpos.id,
+                    "body": json.loads(tpos.webhook_body) if tpos.webhook_body else "",
+                },
+                headers=json.loads(tpos.webhook_headers)
+                if tpos.webhook_headers
+                else None,
+                timeout=40,
+            )
+            
+        except Exception as exc:
+            # webhook fails shouldn't cause the lnurlw to fail since invoice is already paid
+            logger.error(f"Caught exception when dispatching webhook url: {str(exc)}")
+        
+

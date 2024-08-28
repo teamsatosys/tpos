@@ -5,9 +5,10 @@ from lnbits.core.services import create_invoice, pay_invoice, websocket_updater
 from lnbits.helpers import get_current_extension_name
 from lnbits.tasks import register_invoice_listener
 from loguru import logger
-
+from lnbits.core.crud import update_payment_extra
+import httpx,json
 from .crud import get_tpos
-
+from .models import TPoS
 
 async def wait_for_paid_invoices():
     invoice_queue = asyncio.Queue()
@@ -37,6 +38,7 @@ async def on_invoice_paid(payment: Payment) -> None:
 
     tpos = await get_tpos(tpos_id)
     assert tpos
+    await send_webhook(payment, tpos)
 
     await websocket_updater(tpos_id, str(stripped_payment))
 
@@ -61,3 +63,52 @@ async def on_invoice_paid(payment: Payment) -> None:
         extra={**payment.extra, "tipSplitted": True},
     )
     logger.debug(f"tpos: tip invoice paid: {checking_id}")
+
+async def send_webhook(payment: Payment, tpos: TPoS):
+    if not tpos.webhook_url:
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            r: httpx.Response = await client.post(
+                tpos.webhook_url,
+                json={
+                    "payment_hash": payment.payment_hash,
+                    "payment_request": payment.bolt11,
+                    "amount": payment.amount,
+                    "comment": payment.extra.get("comment"),
+                    "webhook_data": payment.extra.get("webhook_data") or "",
+                    "tpos": tpos.id,
+                    "body": json.loads(tpos.webhook_body)
+                    if tpos.webhook_body
+                    else "",
+                },
+                headers=json.loads(tpos.webhook_headers)
+                if tpos.webhook_headers
+                else None,
+                timeout=40,
+            )
+            await mark_webhook_sent(
+                payment.payment_hash,
+                r.status_code,
+                r.is_success,
+                r.reason_phrase,
+                r.text,
+            )
+        except Exception as exc:
+            logger.error(exc)
+            await mark_webhook_sent(
+                payment.payment_hash, -1, False, "Unexpected Error", str(exc)
+            )
+async def mark_webhook_sent(
+    payment_hash: str, status: int, is_success: bool, reason_phrase="", text=""
+) -> None:
+    await update_payment_extra(
+        payment_hash,
+        {
+            "wh_status": status,  # keep for backwards compability
+            "wh_success": is_success,
+            "wh_message": reason_phrase,
+            "wh_response": text,
+        },
+    )
