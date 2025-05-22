@@ -13,22 +13,18 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        <q-responsive :ratio="1" class="q-mx-xl q-mb-md">
-          <lnbits-qrcode
-            :value="'lightning:' + invoiceDialog.data.payment_request.toUpperCase()"
-            :options="{width: 800}"
-            class="rounded-borders"
-          ></lnbits-qrcode>
-        </q-responsive>
+        <lnbits-qrcode
+          :value="'lightning:' + invoiceDialog.data.payment_request.toUpperCase()"
+          class="rounded-borders"
+        ></lnbits-qrcode>
         <q-tooltip>Pay in wallet</q-tooltip>
       </a>
       <div class="text-center">
         <h3 class="q-my-md">${ amountWithTipFormatted }</h3>
         <h5 class="q-mt-none q-mb-sm">
-          ${ fsat }
-          <small> sat</small>
+          ${ amountFormatted }
           <span v-show="tip_options" style="font-size: 0.75rem"
-            >( + ${ tipAmountFormatted } tip)</span
+            >(+ ${ tipAmountFormatted } tip)</span
           >
         </h5>
         <q-chip v-if="nfcTagReading" square>
@@ -111,7 +107,6 @@
       <q-responsive :ratio="1" class="q-mx-xl q-mb-md">
         <lnbits-qrcode
           value="{{ request.url }}"
-          :options="{width: 800}"
           class="rounded-borders"
         ></lnbits-qrcode>
       </q-responsive>
@@ -143,9 +138,9 @@
 
   <q-dialog v-model="lastPaymentsDialog.show" position="bottom">
     <q-card class="lnbits__dialog-card">
-      <q-card-section class="row items-center q-pb-none">
-        <q-space />
-        <q-btn icon="close" flat round dense v-close-popup />
+      <q-card-section class="row items-center q-pb-sm">
+        <q-space></q-space>
+        <q-btn icon="close" size="sm" flat round dense v-close-popup></q-btn>
       </q-card-section>
       <q-list separator class="q-mb-lg">
         <q-item v-if="!lastPaymentsDialog.data.length">
@@ -155,16 +150,69 @@
         </q-item>
         <q-item v-for="(payment, idx) in lastPaymentsDialog.data" :key="idx">
           <q-item-section>
-            <q-item-label class="text-bold"
-              >${payment.amount / 1000} sats</q-item-label
+            <q-item-label
+              v-if="payment.amountFiat"
+              class="text-bold"
+              v-text="payment.amountFiat"
             >
+            </q-item-label>
+            <q-item-label
+              class="text-bold"
+              v-text="formatBalance(payment.amount  / 1000)"
+            >
+            </q-item-label>
+            <q-item-label caption>
+              <q-icon
+                class="q-mr-sm"
+                size="sm"
+                name="check"
+                color="green"
+              ></q-icon>
+              <span v-text="payment.dateFrom"></span>
+            </q-item-label>
             <q-item-label caption lines="2"
               >Hash: ${payment.checking_id.slice(0, 30)}...</q-item-label
             >
           </q-item-section>
+          <q-item-section side>
+            <q-btn
+              round
+              icon="print"
+              color="primary"
+              @click="printReceipt(payment.checking_id)"
+            ></q-btn>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="heldCartsDialog.show" position="bottom">
+    <q-card class="lnbits__dialog-card">
+      <q-card-section class="row items-center q-pb-none">
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+      <q-list separator>
+        <q-item
+          v-for="[key, value] in Object.entries(heldCarts)"
+          :key="key"
+          clickable
+        >
+          <q-item-section @click="restoreCart(key)">
+            <q-item-label class="text-bold" v-text="formatDate(key)">
+            </q-item-label>
+            <q-item-label caption lines="2" v-text="value.note"></q-item-label>
+          </q-item-section>
           <q-item-section side top>
-            <q-item-label caption>${payment.dateFrom}</q-item-label>
-            <q-icon name="check" color="green" />
+            <q-btn
+              icon="delete"
+              color="red"
+              @click.stop="deleteHeldCart(key)"
+              class="q-ml-sm"
+              size="sm"
+              round
+            ></q-btn>
           </q-item-section>
         </q-item>
       </q-list>
@@ -177,11 +225,13 @@
         <div class="text-h6">Withdraw PIN</div>
       </q-card-section>
       <q-card-section>
-        <q-form autofocus @submit="atmSubmit" class="q-gutter-md">
+        <q-form @submit="atmSubmit" class="q-gutter-md">
           <q-input
+            autofocus
             filled
             :type="hidePin ? 'password' : 'number'"
             v-model.number="atmPin"
+            inputmode="numeric"
             ><template v-slot:append>
               <q-icon
                 :name="hidePin ? 'visibility_off' : 'visibility'"
@@ -189,6 +239,23 @@
                 @click="hidePin = !hidePin"
               ></q-icon> </template
           ></q-input>
+          <div>
+            <q-btn label="Submit" type="submit" color="primary"></q-btn>
+          </div>
+        </q-form>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="lnaddressDialog.show">
+    <q-card>
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">LNaddress</div>
+      </q-card-section>
+      <q-card-section>
+        <q-form autofocus @submit="lnaddressSubmit" class="q-gutter-md">
+          <q-input filled type="text" v-model="lnaddressDialog.lnaddress">
+          </q-input>
           <div>
             <q-btn label="Submit" type="submit" color="primary"></q-btn>
           </div>

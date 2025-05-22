@@ -1,8 +1,11 @@
 {
+  "id": "tpos",
+  "version": "1.0.5",
   "name": "TPoS",
+  "repo": "https://github.com/lnbits/tpos",
   "short_description": "A shareable PoS terminal!",
   "tile": "/tpos/static/image/tpos.png",
-  "min_lnbits_version": "0.12.6",
+  "min_lnbits_version": "1.0.0",
   "contributors": [
     {
       "name": "Ben Arc",

@@ -1,12 +1,4 @@
 {% extends "public.html" %} {% block toolbar_title %} {{ tpos.name }}
-<q-btn
-  flat
-  dense
-  size="md"
-  @click.prevent="urlDialog.show = true"
-  icon="share"
-  color="white"
-></q-btn>
 <q-btn-toggle
   v-model="monochrome"
   toggle-color="primary"
@@ -16,7 +8,6 @@
       ]"
   size="sm"
   @input="handleColorScheme"
-  class="q-ml-md"
 />
 {% endblock %} {% block footer %}{% endblock %} {% block page_container %}
 <q-page-container>
@@ -25,7 +16,10 @@
       <div class="row justify-center full-width">
         <div class="col-12 col-sm-8 col-md-6 col-lg-4 text-center">
           <h3 class="q-mb-md">${ amountFormatted }</h3>
-          <h5 v-show="!denomIsSats" class="q-mt-none q-mb-sm">
+          <h5
+            v-show="!denomIsSats && '{{LNBITS_DENOMINATION}}' == 'sats'"
+            class="q-mt-none q-mb-sm"
+          >
             ${ fsat }<small> sat</small>
           </h5>
           <div v-if="total > 0.0">
@@ -53,432 +47,56 @@
       <q-page-sticky expand position="bottom">
         <div class="row justify-center full-width">
           <div class="col-12 col-sm-8 col-md-6 col-lg-4">
-            <div class="keypad q-pa-sm">
-              <q-btn
-                unelevated
-                @click="stack.push(1)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >1</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(2)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >2</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(3)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >3</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(4)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >4</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(5)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >5</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(6)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >6</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(7)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >7</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(8)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >8</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(9)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >9</q-btn
-              >
-              <q-btn
-                unelevated
+            <keypad>
+              <keypad-item @click="stack.push(1)" :value="1"></keypad-item>
+              <keypad-item @click="stack.push(2)" :value="2"></keypad-item>
+              <keypad-item @click="stack.push(3)" :value="3"></keypad-item>
+              <keypad-item @click="stack.push(4)" :value="4"></keypad-item>
+              <keypad-item @click="stack.push(5)" :value="5"></keypad-item>
+              <keypad-item @click="stack.push(6)" :value="6"></keypad-item>
+              <keypad-item @click="stack.push(7)" :value="7"></keypad-item>
+              <keypad-item @click="stack.push(8)" :value="8"></keypad-item>
+              <keypad-item @click="stack.push(9)" :value="9"></keypad-item>
+              <keypad-item
                 @click="total > 0.0 ? cancelAddAmount() : stack = []"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
+                :value="'C'"
                 :color="monochrome ? 'secondary' : 'negative'"
-                :disable="keypadDisabled"
-                >C</q-btn
-              >
-              <q-btn
-                unelevated
-                @click="stack.push(0)"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
-                :disable="keypadDisabled"
-                >0</q-btn
-              >
-              <q-btn
-                unelevated
+              ></keypad-item>
+              <keypad-item @click="stack.push(0)" :value="0"></keypad-item>
+              <keypad-item
                 @click="stack.pop()"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
+                :value="'⬅'"
                 :color="monochrome ? 'secondary' : 'warning'"
                 class="btn-cancel"
-                :disable="keypadDisabled"
-                >⬅</q-btn
-              >
-              <q-btn
-                unelevated
+              ></keypad-item>
+              <keypad-item
                 @click="addAmount()"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
-                color="primary"
+                :value="'+'"
                 class="btn-plus"
-                :disable="keypadDisabled"
-                >+</q-btn
-              >
-              <q-btn
-                unelevated
+              ></keypad-item>
+              <keypad-item
                 @click="submitForm()"
-                size="xl"
-                :outline="!($q.dark.isActive)"
-                rounded
+                :value="'Ok'"
                 :color="monochrome ? 'secondary' : 'positive'"
                 class="btn-confirm"
-                :disable="keypadDisabled"
-                >Ok</q-btn
-              >
-            </div>
+              ></keypad-item>
+            </keypad>
           </div>
         </div>
       </q-page-sticky>
       <q-page-sticky position="top-right" :offset="[18, 18]">
-        <q-btn
-          @click="showLastPayments"
-          fab
-          icon="receipt_long"
-          color="primary"
-        ></q-btn
-      ></q-page-sticky>
-      <q-page-sticky position="top-right" :offset="[18, 90]">
-        <q-btn
-          @click="toggleFullscreen"
-          fab
-          :icon="fullScreenIcon"
-          color="primary"
-        ></q-btn>
-      </q-page-sticky>
-      <q-page-sticky position="top-right" :offset="[18, 162]">
-        <q-btn
-          @click="atm"
-          v-if="withdrawamtposs > 0 && !atmMode"
-          fab
-          icon="atm"
-          color="primary"
-        ></q-btn>
-      </q-page-sticky>
-      <q-page-sticky position="top-right" :offset="[18, 234]">
-        <q-btn
-          @click="showPoS = false"
-          v-if="items.length > 0"
-          fab
-          icon="point_of_sale"
-          color="primary"
-          :disable="atmMode"
-        ></q-btn>
+        {% include "tpos/_options_fab.html" %}
       </q-page-sticky>
     </template>
-    <template v-else>
-      <q-drawer
-        side="right"
-        v-model="cartDrawer"
-        show-if-above
-        bordered
-        :width="drawerWidth"
-        :breakpoint="1200"
-      >
-        <div class="row full-width q-pa-md">
-          <div class="absolute-top-right q-pa-md">
-            <q-btn @click="cartDrawer = !cartDrawer" icon="close" flat round
-              ><q-tooltip>Hide Cart</q-tooltip></q-btn
-            >
-          </div>
-          <div class="col-12 text-center">
-            <h3 class="q-mb-md">${totalFormatted}</h3>
-            <h5 v-show="!denomIsSats" class="q-mt-none q-mb-sm">
-              ${totalfsat}<small> sat</small>
-            </h5>
-          </div>
-          <div class="col-12" style="max-height: 60vh; overflow-y: auto">
-            <table class="table full-width">
-              <colgroup>
-                <col width="50%" />
-                <col width="25%" />
-                <col width="0%" />
-                <col width="0%" />
-              </colgroup>
-              <tbody>
-                <tr v-for="item in [...cart.values()]" :key="item.id">
-                  <td
-                    class="text-bold ellipsis"
-                    style="
-                      white-space: nowrap;
-                      text-overflow: ellipsis;
-                      overflow: hidden;
-                      max-width: 1px;
-                    "
-                  >
-                    ${item.title}
-                  </td>
-                  <td>
-                    <div
-                      class="flex justify-evenly"
-                      style="align-items: center"
-                    >
-                      <q-btn
-                        @click="removeFromCart(item)"
-                        flat
-                        dense
-                        round
-                        size="sm"
-                        icon="remove"
-                        :disabled="item.quantity == 1"
-                      ></q-btn>
-                      <div class="text-center">
-                        <span class="text-bold">${item.quantity}</span>
-                      </div>
-                      <q-btn
-                        @click="addToCart(item)"
-                        flat
-                        dense
-                        round
-                        size="sm"
-                        icon="add"
-                      ></q-btn>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="text-center">
-                      <span>${item.formattedPrice}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <q-btn
-                      @click="removeFromCart(item, item.quantity)"
-                      color="negative"
-                      size="sm"
-                      round
-                      icon="delete"
-                    ></q-btn>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="row q-col-gutter-md q-pa-md absolute-bottom q-mb-lg">
-          <div v-if="total > 0" class="col-12">
-            <q-list dense padding class="rounded-borders">
-              <q-item>
-                <q-item-section> Subtotal </q-item-section>
-                <q-item-section side v-text="taxSubtotal"></q-item-section>
-              </q-item>
-              <q-item>
-                <q-item-section
-                  v-text="`Tax ${taxInclusive ? '(incl.)' : ''}`"
-                ></q-item-section>
-                <q-item-section side v-text="formattedCartTax"></q-item-section>
-              </q-item>
-              <q-separator></q-separator>
-              <q-item>
-                <q-item-section> Total </q-item-section>
-                <q-item-section side> ${totalFormatted} </q-item-section>
-              </q-item>
-            </q-list>
-          </div>
-          <div class="col-12 col-sm-6">
-            <q-btn
-              class="full-width"
-              @click="submitForm"
-              color="positive"
-              label="Pay"
-              padding="md"
-              :disabled="cart.size == 0"
-            ></q-btn>
-          </div>
-          <div class="col-12 col-sm-6">
-            <q-btn
-              class="full-width"
-              @click="clearCart"
-              color="negative"
-              label="Clear cart"
-              padding="md"
-            ></q-btn>
-          </div>
-        </div>
-      </q-drawer>
-      <div class="row justify-center q-col-gutter-md q-pa-md">
-        <div class="col-12 col-sm-8 col-md-6">
-          <q-input v-model="searchTerm" label="Filter">
-            <q-icon
-              v-if="searchTerm !== ''"
-              name="close"
-              @click="searchTerm = ''"
-              class="cursor-pointer"
-            />
-          </q-input>
-        </div>
-      </div>
-      <div
-        v-if="categories && categories.length"
-        class="flex justify-center q-pa-md q-gutter-md"
-      >
-        <template v-for="category in Array.from(categories.values())">
-          <q-btn
-            color="secondary"
-            :size="$q.screen.gt.sm ? 'lg' : 'md'"
-            :padding="$q.screen.gt.sm ? 'lg' : 'md'"
-            :label="category"
-            @click="handleCategoryBtn(category)"
-            :outline="!(categoryFilter === category || (categoryFilter === '' && category === 'All'))"
-          ></q-btn>
-        </template>
-      </div>
-      <div v-if="$q.screen.gt.sm" class="row q-col-gutter-md q-pa-md">
-        <div
-          class="col-6 col-md-4 col-lg-3"
-          v-for="item in filteredItems"
-          :key="item.name"
-        >
-          <q-card class="full-height column">
-            <img
-              v-if="item.image"
-              class="q-pa-md responsive-img"
-              :src="item.image"
-            />
-
-            <q-card-section class="q-mt-auto">
-              <div class="text-h6">${item.title}</div>
-              <div class="text-subtitle1">
-                ${item.formattedPrice}
-                <span v-if="item.tax || taxDefault" class="text-caption">
-                  (tax ${taxInclusive ? 'incl.' : 'excl.'} ${item.tax ||
-                  taxDefault}%)
-                </span>
-              </div>
-              <div
-                v-if="item.description"
-                class="text-caption ellipsis-2-lines q-py-sm"
-              >
-                ${item.description}
-              </div>
-            </q-card-section>
-
-            <q-card-actions vertical class="q-pa-md">
-              <q-btn @click="addToCart(item)" padding="md" color="primary"
-                >Add</q-btn
-              >
-            </q-card-actions>
-          </q-card>
-        </div>
-      </div>
-      <div v-else class="q-pa-md">
-        <item-list
-          :items="filteredItems"
-          :inclusive="taxInclusive"
-          :format="formatAmount"
-          :currency="currency"
-          @add-product="addToCart"
-        >
-        </item-list>
-      </div>
-      <q-page-sticky position="bottom-right" :offset="[18, 18]">
-        <q-btn
-          @click="showPoS = true"
-          fab
-          icon="dialpad"
-          color="primary"
-        ></q-btn
-      ></q-page-sticky>
-      <q-page-sticky position="bottom-right" :offset="[18, 90]">
-        <q-btn
-          @click="cartDrawer = !cartDrawer"
-          fab
-          :icon="cartDrawer ? 'chevron_right' : 'chevron_left'"
-          color="primary"
-          ><q-tooltip
-            >${cartDrawer ? 'Hide Cart' :' Open Cart'}</q-tooltip
-          ></q-btn
-        ></q-page-sticky
-      >
-      <q-page-sticky
-        v-if="!cartDrawer && cart.size > 0"
-        position="bottom-right"
-        :offset="[18, 162]"
-      >
-        <q-btn
-          @click="cartDrawer = !cartDrawer"
-          fab
-          icon="shopping_bag"
-          color="primary"
-          ><q-badge color="red" floating
-            >${[...this.cart.values()].reduce((a,i)=>a+i.quantity,0)}</q-badge
-          ></q-btn
-        ></q-page-sticky
-      >
-    </template>
+    <template v-else> {% include "tpos/_cart.html" %} </template>
     {% include "tpos/dialogs.html" %}
   </q-page>
 </q-page-container>
+<template v-if="enablePrint">
+  <Teleport to="body">
+    <receipt class="receipt" v-if="receiptData" :data="receiptData"></receipt>
+  </Teleport>
+</template>
 {% endblock %} {% block styles %}
 <style>
   * {
@@ -525,34 +143,57 @@
     padding: 8px;
     text-align: left;
   }
+  @media screen {
+    .receipt {
+      display: none;
+    }
+  }
+  @media print {
+    @page {
+      size: auto;
+      margin: 0;
+    }
+    html {
+      font-size: 12px !important;
+    }
+    * {
+      color: black !important;
+      background: white !important;
+    }
+    body > * {
+      display: none !important;
+    }
+    .receipt {
+      display: block !important;
+      margin: 0mm !important;
+    }
+
+    .receipt p {
+      margin: 0 !important;
+    }
+  }
 </style>
 {% endblock %} {% block scripts %}
-<script src="{{ url_for('tpos_static', path='js/utils.js') }}"></script>
-<script src="{{ url_for('tpos_static', path='components/item-list/item-list.js') }}"></script>
-
 <script>
-  // pass Jinja variables to JS
-  const tpos = {}
-  tpos.id = '{{ tpos.id }}'
-  tpos.currency = '{{ tpos.currency }}'
-  tpos.withdrawpremium = Number('{{ tpos.withdrawpremium }}') / 100
-  tpos.withdrawamtposs = Number('{{ tpos.withdrawamtposs }}')
-  tpos.items = JSON.parse('{{ tpos.items | safe }}')
-  tpos.tip_options =
-    '{{ tpos.tip_options | tojson }}' == 'null'
-      ? null
-      : JSON.parse('{{ tpos.tip_options }}')
-  tpos.tip_wallet = '{{ tpos.tip_wallet }}'
-  tpos.withdrawpindisabled = JSON.parse(
-    '{{ tpos.withdrawpindisabled | tojson }}'
-  )
-  tpos.tax_inclusive = JSON.parse('{{ tpos.tax_inclusive | tojson }}')
-  tpos.tax_default = Number('{{ tpos.tax_default }}')
-
-  const withdrawpinopen = Number('{{ withdrawpinopen }}')
+  const tpos = JSON.parse({{ tpos | tojson | safe }})
+  tpos.items = tpos.items !== null ? JSON.parse(tpos.items) : []
+  tpos.tip_options = tpos.tip_options ? JSON.parse(tpos.tip_options) : []
+  if (tpos.withdraw_maximum) {
+    tpos.withdraw_premium = Number(tpos.withdraw_maximum / 100)
+  }
+  const items = tpos.items
+  const options = tpos.tip_options
+  const withdraw_maximum = tpos.withdraw_limit
+  const withdraw_pin_open = Number('{{ withdraw_pin_open }}')
+  const lnaddress = tpos.lnaddress
+  const lnaddressparam = '{{ lnaddressparam }}'
+  const lnaddress_cut = tpos.lnaddress_cut
 </script>
 
-<script src="{{ url_for('tpos_static', path='js/tpos.js') }}"></script>
+<script src="{{ static_url_for('tpos/static', path='js/tpos.js') }}"></script>
+<script src="{{ static_url_for('tpos/static', path='components/item-list.js') }}"></script>
+<script src="{{ static_url_for('tpos/static', path='components/keypad.js') }}"></script>
+<script src="{{ static_url_for('tpos/static', path='components/receipt.js') }}"></script>
 
 <style scoped>
   input::-webkit-outer-spin-button,
