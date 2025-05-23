@@ -4,25 +4,25 @@ from typing import Optional, Union
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
 
-from .models import CreateTposData, LnurlCharge, Tpos, TPoSClean
+from .models import CreateTposData, LnurlCharge, TPoS, TPoSClean
 
 db = Database("ext_tpos")
 
 
-async def create_tpos(data: CreateTposData) -> Tpos:
+async def create_tpos(data: CreateTposData) -> TPoS:
     tpos_id = urlsafe_short_hash()
-    tpos = Tpos(id=tpos_id, **data.dict())
+    tpos = TPoS(id=tpos_id, **data.dict())
     await db.insert("tpos.pos", tpos)
     return tpos
 
 
-async def get_tpos(tpos_id: str) -> Optional[Tpos]:
+async def get_tpos(tpos_id: str) -> Optional[TPoS]:
     return await db.fetchone(
-        "SELECT * FROM tpos.pos WHERE id = :id", {"id": tpos_id}, Tpos
+        "SELECT * FROM tpos.pos WHERE id = :id", {"id": tpos_id}, TPoS
     )
 
 
-async def start_lnurlcharge(tpos: Tpos) -> LnurlCharge:
+async def start_lnurlcharge(tpos: TPoS) -> LnurlCharge:
     now = int(time())
     seconds = (
         tpos.withdraw_between * 60
@@ -69,17 +69,17 @@ async def get_clean_tpos(tpos_id: str) -> Optional[TPoSClean]:
     )
 
 
-async def update_tpos(tpos: Tpos) -> Tpos:
+async def update_tpos(tpos: TPoS) -> TPoS:
     await db.update("tpos.pos", tpos)
     return tpos
 
 
-async def get_tposs(wallet_ids: Union[str, list[str]]) -> list[Tpos]:
+async def get_tposs(wallet_ids: Union[str, list[str]]) -> list[TPoS]:
     if isinstance(wallet_ids, str):
         wallet_ids = [wallet_ids]
     q = ",".join([f"'{wallet_id}'" for wallet_id in wallet_ids])
     tposs = await db.fetchall(
-        f"SELECT * FROM tpos.pos WHERE wallet IN ({q})", model=Tpos
+        f"SELECT * FROM tpos.pos WHERE wallet IN ({q})", model=TPoS
     )
     return tposs
 

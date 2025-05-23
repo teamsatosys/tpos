@@ -35,7 +35,7 @@ from .models import (
     CreateWithdrawPay,
     LnurlCharge,
     PayLnurlWData,
-    Tpos,
+    TPoS,
 )
 
 tpos_api_router = APIRouter()
@@ -45,7 +45,7 @@ tpos_api_router = APIRouter()
 async def api_tposs(
     all_wallets: bool = Query(False),
     key_info: WalletTypeInfo = Depends(require_invoice_key),
-) -> list[Tpos]:
+) -> list[TPoS]:
     wallet_ids = [key_info.wallet.id]
     if all_wallets:
         user = await get_user(key_info.wallet.user)
