@@ -9,7 +9,7 @@ from lnbits.settings import settings
 from starlette.responses import HTMLResponse
 
 from .crud import get_clean_tpos, get_tpos
-from .models import TposClean
+from .models import TPoSClean
 
 tpos_generic_router = APIRouter()
 
@@ -36,7 +36,7 @@ async def tpos(request: Request, tpos_id, lnaddress: Optional[str] = ""):
     if tpos.withdraw_pin_disabled:
         withdraw_pin_open = tpos.withdraw_pin
 
-    tpos_clean = TposClean(**tpos.dict())
+    tpos_clean = TPoSClean(**tpos.dict())
     response = tpos_renderer().TemplateResponse(
         "tpos/tpos.html",
         {

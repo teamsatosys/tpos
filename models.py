@@ -102,7 +102,7 @@ class TPoSClean(BaseModel):
         return self.withdraw_limit - self.withdrawn_amount
 
 
-class Tpos(TposClean, BaseModel):
+class Tpos(TPoSClean, BaseModel):
     wallet: str
     tip_wallet: Optional[str] = None
     withdraw_pin: Optional[int] = None

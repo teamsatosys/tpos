@@ -4,7 +4,7 @@ from typing import Optional, Union
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
 
-from .models import CreateTposData, LnurlCharge, Tpos, TposClean
+from .models import CreateTposData, LnurlCharge, Tpos, TPoSClean
 
 db = Database("ext_tpos")
 
@@ -63,9 +63,9 @@ async def update_lnurlcharge(charge: LnurlCharge) -> LnurlCharge:
     return charge
 
 
-async def get_clean_tpos(tpos_id: str) -> Optional[TposClean]:
+async def get_clean_tpos(tpos_id: str) -> Optional[TPoSClean]:
     return await db.fetchone(
-        "SELECT * FROM tpos.pos WHERE id = :id", {"id": tpos_id}, TposClean
+        "SELECT * FROM tpos.pos WHERE id = :id", {"id": tpos_id}, TPoSClean
     )
 
 
