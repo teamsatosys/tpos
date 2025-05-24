@@ -11,7 +11,7 @@ from loguru import logger
 from starlette.exceptions import HTTPException
 
 from .crud import get_lnurlcharge, get_tpos, update_lnurlcharge, update_tpos
-from .models import LnurlCharge
+from .models import LnurlCharge,TPoS
 
 
 class LNURLErrorResponseHandler(APIRoute):
@@ -146,7 +146,7 @@ async def lnurl_callback(
         ) from exc
     return {"status": "OK"}
 async def dispatch_webhook(
-  payment_request: str,tpos:TPoS
+  payment_request: str,tpos:Tpos
 ) -> None:
     async with httpx.AsyncClient() as client:
         try:
